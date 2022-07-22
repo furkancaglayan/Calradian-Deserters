@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SPCultures>
+	<Culture id="deserters"
+			   name="{=deserterculturename}Deserters"
+			   elite_basic_troop="NPCCharacter.looter"
+			   basic_troop="NPCCharacter.looter"
+			   is_bandit="false"
+			   can_have_settlement="false"
+			   encounter_background_mesh="encounter_looter">
+		<banner_bearer_replacement_weapons>
+			<item id="Item.iron_spatha_sword_t2"/>
+			<item id="Item.empire_sword_1_t2" />
+			<item id="Item.empire_sword_2_t3" />
+			<item id="Item.empire_sword_6_t5" />
+		</banner_bearer_replacement_weapons>
+	</Culture>
+</SPCultures>

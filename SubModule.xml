@@ -1,26 +1,39 @@
- <Module>
-     <Name value="Calradian Deserters"/>
-     <Id value="CalradianDeserters"/>
-     <Version value="v1.0.0"/>
-     <SingleplayerModule value="true"/>
-     <MultiplayerModule value="false"/>
-     <DependedModules>
-         <DependedModule Id="Native" DependentVersion = "e1.8.0.318937"/>
-         <DependedModule Id="SandBoxCore" DependentVersion = "e1.8.0.318937"/>
-         <DependedModule Id="Sandbox" DependentVersion = "e1.8.0.318937"/>
-     </DependedModules>
-     <SubModules>
-         <SubModule>
-             <Name value="CalradianDeserters"/>
-             <DLLName value="CalradianDeserters.dll"/>
-             <SubModuleClassType value="CalradianDeserters.Base.CalradianDesertersSubModule"/>
-             <Tags>
-                 <Tag key="DedicatedServerType" value="none" />
-                 <Tag key="IsNoRenderModeElement" value="false" />
-             </Tags>
-         </SubModule>
-     </SubModules>
-     <Xmls>
-       
-     </Xmls>
- </Module>
+<Module>
+	<Name value="Calradian Deserters"/>
+	<Id value="CalradianDeserters"/>
+	<Version value="v1.0.0"/>
+	<SingleplayerModule value="true"/>
+	<MultiplayerModule value="false"/>
+	<DependedModules>
+		<DependedModule Id="Native" DependentVersion = "e1.8.0.318937"/>
+		<DependedModule Id="SandBoxCore" DependentVersion = "e1.8.0.318937"/>
+		<DependedModule Id="Sandbox" DependentVersion = "e1.8.0.318937"/>
+	</DependedModules>
+	<SubModules>
+		<SubModule>
+			<Name value="CalradianDeserters"/>
+			<DLLName value="CalradianDeserters.dll"/>
+			<SubModuleClassType value="CalradianDeserters.Base.CalradianDesertersSubModule"/>
+			<Tags>
+				<Tag key="DedicatedServerType" value="none" />
+				<Tag key="IsNoRenderModeElement" value="false" />
+			</Tags>
+		</SubModule>
+	</SubModules>
+	<Xmls>
+		<XmlNode>
+			<XmlName id="SPCultures" path="clans"/>
+			<IncludedGameTypes>
+				<GameType value = "Campaign"/>
+				<GameType value = "CampaignStoryMode"/>
+			</IncludedGameTypes>
+		</XmlNode>
+		<XmlNode>
+			<XmlName id="Factions" path="clans"/>
+			<IncludedGameTypes>
+				<GameType value = "Campaign"/>
+				<GameType value = "CampaignStoryMode"/>
+			</IncludedGameTypes>
+		</XmlNode>
+	</Xmls>
+</Module>

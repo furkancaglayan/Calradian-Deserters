@@ -1,0 +1,38 @@
+﻿using CalradianDeserters.Behaviors;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.Core;
+using TaleWorlds.MountAndBlade;
+
+namespace CalradianDeserters.Base
+{
+    public class CalradianDesertersSubModule : MBSubModuleBase
+    {
+        protected override void OnSubModuleLoad()
+        {
+            base.OnSubModuleLoad();
+        }
+
+        protected override void OnGameStart(Game game, IGameStarter gameStarter)
+        {
+            if (game.GameType is Campaign campaign)
+            {
+                CampaignGameStarter campaignStarter = (CampaignGameStarter)gameStarter;
+                //AddModels(campaignStarter);
+                AddBehaviors(campaignStarter);
+
+                //campaignStarter.LoadGameTexts(ModuleHelper.GetModuleFullPath("CalradianPatrolsV2") + "ModuleData/module_strings.xml");
+                //ModManager.OnGameStart();
+            }
+        }
+
+        private void AddBehaviors(CampaignGameStarter campaignStarter)
+        {
+            campaignStarter.AddBehavior(new CalradianDesertersCampaignBehavior());
+        }
+    }
+}

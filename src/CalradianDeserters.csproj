@@ -101,8 +101,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CalradianDesertersSubModuleBase.cs" />
+    <Compile Include="Base\CalradianDesertersSubModule.cs" />
+    <Compile Include="Behaviors\CalradianDesertersCampaignBehavior.cs" />
+    <Compile Include="Components\DeserterPartyComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
