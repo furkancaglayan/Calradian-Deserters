@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NPCCharacters>
+	<NPCCharacter id="deserter_lord"
+				  name="{=3PzgpFGq}Neutral"
+				  age="51"
+				  voice="curt"
+				  default_group="Cavalry"
+				  is_template="true"
+				  is_hero="true"
+				  culture="Culture.khuzait"
+				  occupation="Lord"
+				  is_hidden_encyclopedia="true"
+				  face_mesh_cache="true"
+				  is_obsolete="true">
+		<face>
+			<!--face_key value="00065d26407c300d44e41771225c99957c67a8684a494ab868898a7575d96733000aca34ea9b6a780000037f0000000f00000037049140010000000000003000" /-->
+			<BodyProperties version="4"
+							key="00065C06407C300D44E41771225899957C67A8684A494AB868898A7575D9673300088A38089B6A780000037F0000000F00000037049140010000000001183001" />
+		</face>
+		<skills></skills>
+		<Traits>
+			<!-- USED TO DERIVE SKILLS-->
+			<Trait id="BalancedFightingSkills"
+				   value="5" />
+			<Trait id="Commander"
+				   value="8" />
+			<Trait id="Politician"
+				   value="6" />
+			<Trait id="Manager"
+				   value="7" />
+			<Trait id="Valor"
+				   value="1" />
+			<Trait id="Honor"
+				   value="1" />
+			<Trait id="Generosity"
+				   value="-1" />
+		</Traits>
+		<Equipments>
+			<EquipmentRoster civilian="true" />
+			<EquipmentRoster>
+				<equipment slot="Item0"
+						   id="Item.ambassador_sword_t3" />
+			</EquipmentRoster>
+			<EquipmentSet id="khu_bat_template_medium" />
+			<EquipmentSet id="khu_civ_template_default"
+						  civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+</NPCCharacters>

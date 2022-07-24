@@ -7,5 +7,5 @@
 			 is_bandit="false"
 			 can_have_settlement="false"
 			 encounter_background_mesh="encounter_looter">
-	</Culture>
+	</Culture>		
 </SPCultures>

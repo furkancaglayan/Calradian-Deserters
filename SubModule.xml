@@ -21,8 +21,15 @@
 		</SubModule>
 	</SubModules>
 	<Xmls>
+		<XmlNode>                
+			<XmlName id="NPCCharacters" path="characters"/>
+			<IncludedGameTypes>
+				<GameType value = "Campaign"/>
+				<GameType value = "CampaignStoryMode"/>
+			</IncludedGameTypes>
+		</XmlNode>    
 		<XmlNode>
-			<XmlName id="SPCultures" path="clans"/>
+			<XmlName id="SPCultures" path="cultures"/>
 			<IncludedGameTypes>
 				<GameType value = "Campaign"/>
 				<GameType value = "CampaignStoryMode"/>
@@ -35,5 +42,6 @@
 				<GameType value = "CampaignStoryMode"/>
 			</IncludedGameTypes>
 		</XmlNode>
+		
 	</Xmls>
 </Module>
