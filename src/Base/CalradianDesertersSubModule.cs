@@ -1,4 +1,5 @@
 ﻿using CalradianDeserters.Behaviors;
+using CalradianDeserters.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace CalradianDeserters.Base
             if (game.GameType is Campaign campaign)
             {
                 CampaignGameStarter campaignStarter = (CampaignGameStarter)gameStarter;
-                //AddModels(campaignStarter);
+                AddModels(campaignStarter);
                 AddBehaviors(campaignStarter);
 
                 //campaignStarter.LoadGameTexts(ModuleHelper.GetModuleFullPath("CalradianPatrolsV2") + "ModuleData/module_strings.xml");
@@ -33,6 +34,11 @@ namespace CalradianDeserters.Base
         private void AddBehaviors(CampaignGameStarter campaignStarter)
         {
             campaignStarter.AddBehavior(new CalradianDesertersCampaignBehavior());
+        }
+
+        private void AddModels(CampaignGameStarter campaignStarter)
+        {
+            campaignStarter.AddModel(new CustomFoodConsumptionModel(campaignStarter));
         }
     }
 }

@@ -104,7 +104,10 @@
     <Compile Include="Base\CalradianDesertersSubModule.cs" />
     <Compile Include="Behaviors\CalradianDesertersCampaignBehavior.cs" />
     <Compile Include="Components\DeserterPartyComponent.cs" />
+    <Compile Include="Extensions\CalradianDesertersExtensions.cs" />
+    <Compile Include="Models\CustomFoodConsumptionModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Save\CalradianDesertersSaveableTypeDefiner.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

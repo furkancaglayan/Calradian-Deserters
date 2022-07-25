@@ -4,7 +4,7 @@
 			 name="{=desertersculturename}Deserters"
 			 elite_basic_troop="NPCCharacter.looter"
 			 basic_troop="NPCCharacter.looter"
-			 is_bandit="false"
+			 is_bandit="true"
 			 can_have_settlement="false"
 			 encounter_background_mesh="encounter_looter">
 	</Culture>		
