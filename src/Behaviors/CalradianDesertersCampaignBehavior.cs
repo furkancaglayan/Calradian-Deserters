@@ -23,10 +23,12 @@ namespace CalradianDeserters.Behaviors
         private Clan Deserters => Clan.FindFirst(x => x.StringId == "deserters");
         private Dictionary<MobileParty, CampaignTime> _nextDecisionTimes = new Dictionary<MobileParty, CampaignTime>();
         private List<MobileParty> _deserterParties = new List<MobileParty>();
+        private List<MobileParty> _obsoleteDeserterParties = new List<MobileParty>();
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunchedEvent);
             CampaignEvents.TickEvent.AddNonSerializedListener(this, Tick);
+            CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, HourlyTick);
             CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, HourlyTickParty);
             CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
             CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, MobilePartyCreated);
@@ -34,12 +36,40 @@ namespace CalradianDeserters.Behaviors
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreated);
         }
 
+        private void HourlyTick()
+        {
+            for (int i = _obsoleteDeserterParties.Count - 1; i >= 0 ; i--)
+            {
+                _obsoleteDeserterParties[i].ActualClan = Deserters;
+                DestroyPartyAction.Apply(null, _obsoleteDeserterParties[i]);
+            }
+
+            _obsoleteDeserterParties.Clear();
+        }
+
         private void OnSessionLaunchedEvent(CampaignGameStarter campaignGameStarter)
         {
+            AddDialogs(campaignGameStarter);
+            AddGameMenus(campaignGameStarter);
+        }
+
+        private void AddDialogs(CampaignGameStarter campaignGameStarter)
+        {
+        }
+
+        private void AddGameMenus(CampaignGameStarter campaignGameStarter)
+        {
+
         }
 
         private void Tick(float dt)
         {
+#if DEBUG
+            foreach (var party in _deserterParties)
+            {
+                party.IsVisible = true;
+            }
+#endif
         }
 
         private void HourlyTickParty(MobileParty party)
@@ -62,7 +92,7 @@ namespace CalradianDeserters.Behaviors
         {
             if (mobileParty.ActualClan == Deserters && !IsDeserter(mobileParty))
             {
-                DestroyPartyAction.Apply(null, mobileParty);
+                _obsoleteDeserterParties.Add(mobileParty);
             }
         }
 
@@ -73,6 +103,29 @@ namespace CalradianDeserters.Behaviors
                 if (mobileParty.ActualClan == Deserters && !IsDeserter(mobileParty))
                 {
                     DestroyPartyAction.Apply(null, mobileParty);
+                }
+            }
+
+            GenerateRandomParties();
+        }
+
+        private void GenerateRandomParties(int n = 4)
+        {
+            var x = 25;
+            var y = 55;
+
+            foreach (var kingdom in Kingdom.All)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    var roster = TroopRoster.CreateDummyTroopRoster();
+                    const string troopId = "deserter";
+                    var character = Campaign.Current.ObjectManager.GetObject<CharacterObject>(troopId);
+                    roster.AddToCounts(character, MBRandom.RandomInt(x, y));
+                    var randomVillage = kingdom.Villages.GetRandomElement();
+                    var position = Helpers.MobilePartyHelper.FindReachablePointAroundPosition(randomVillage.Settlement.Position2D, 10, 5);
+
+                    CreateDeserterParty(randomVillage.Settlement, roster, position);
                 }
             }
         }
@@ -108,6 +161,7 @@ namespace CalradianDeserters.Behaviors
 
         public override void SyncData(IDataStore dataStore)
         {
+            dataStore.SyncData("_obsoleteDeserterParties", ref _obsoleteDeserterParties);
             dataStore.SyncData("_deserterParties", ref _deserterParties);
             dataStore.SyncData("_desertersDecisionTimes", ref _nextDecisionTimes);
         }
@@ -118,7 +172,6 @@ namespace CalradianDeserters.Behaviors
 
             MobileParty selectedTarget = null;
             MobileParty fleeTarget = null;
-
 
             var bestAttackScore = 0f;
 
@@ -134,7 +187,8 @@ namespace CalradianDeserters.Behaviors
                     {
                         if (mobileParty.IsLordParty)
                         {
-                            if (fleeTarget == null || Campaign.Current.Models.MapDistanceModel.GetDistance(fleeTarget, party) > Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty, party))
+                            if (enemyStrength > partyStrength * 1.33f &&
+                                (fleeTarget == null || Campaign.Current.Models.MapDistanceModel.GetDistance(fleeTarget, party) > Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty, party)))
                             {
                                 fleeTarget = mobileParty;
                             }
@@ -158,11 +212,11 @@ namespace CalradianDeserters.Behaviors
             {
                 var targetDirectionNormalized = (-fleeTarget.Position2D + party.Position2D).Normalized();
                 var tryCount = 10;
-                var targetPosition = targetDirectionNormalized * 5 + fleeTarget.Position2D;
+                var targetPosition = targetDirectionNormalized * 5 + party.Position2D;
 
                 for (int i = 0; i < tryCount; i++)
                 {
-                    targetPosition = targetDirectionNormalized * 5+ fleeTarget.Position2D;
+                    targetPosition = targetDirectionNormalized * 5+ party.Position2D;
                     targetPosition.RotateCCW((i * 360 / tryCount) * MathF.PI / 180);
                     
                     var faceIndex = Campaign.Current.MapSceneWrapper.GetFaceIndex(targetPosition);
@@ -174,13 +228,15 @@ namespace CalradianDeserters.Behaviors
                 }
 
                 party.SetMoveGoToPoint(targetPosition);
+                DisableThinkForHours(party, 2);
             }
             else if (selectedTarget != null && !selectedTarget.IsMilitia)
             {
                 SetPartyAiAction.GetActionForEngagingParty(party, selectedTarget);
                 DisableThinkForHours(party, 12);
             }
-            else if (selectedTarget != null && selectedTarget.IsMilitia)
+            else if (selectedTarget != null && selectedTarget.IsMilitia && !selectedTarget.CurrentSettlement.IsRaided 
+                    && !selectedTarget.CurrentSettlement.IsUnderRaid)
             {
                 SetPartyAiAction.GetActionForRaidingSettlement(party, selectedTarget.CurrentSettlement);
                 DisableThinkForHours(party, 24);
