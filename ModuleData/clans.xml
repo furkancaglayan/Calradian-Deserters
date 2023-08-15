@@ -7,7 +7,7 @@
 			 color2="FF8B7C73"
 			 alternative_color="FF8B7C73"
 			 alternative_color2="FF8B7C73"
-			 culture="Culture.deserters"
+			 culture="Culture.looters"
 			 default_party_template="PartyTemplate.looters_template"
 			 settlement_banner_mesh="none"
 			 is_bandit="true"

@@ -1,3 +1,0 @@
-Version: 3.0.0
-Game Version: e1.7.2.314157
-- Added Mod Configuration Menu support. 

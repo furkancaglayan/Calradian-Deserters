@@ -27,7 +27,6 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
@@ -77,7 +76,6 @@ StyleCopReport.xml
 *.obj
 *.iobj
 *.pch
-*.pdb
 *.ipdb
 *.pgc
 *.pgd
@@ -301,7 +299,7 @@ node_modules/
 *.dsw
 *.dsp
 
-# Visual Studio 6 technical files 
+# Visual Studio 6 technical files
 *.ncb
 *.aps
 
@@ -396,3 +394,15 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+*.targets
+*.json
+*.cache
+*.props
+
+bin/Win64_Shipping_Client/*.dll
+bin/Win64_Shipping_Client/*.pdb
+!bin/Win64_Shipping_Client/MCM*.dll
+!bin/Win64_Shipping_Client/MCM*.pdb
+!bin/Win64_Shipping_Client/CalradiaPatrols*.dll
+!bin/Win64_Shipping_Client/CalradiaPatrols*.pdb
+

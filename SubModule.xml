@@ -5,9 +5,9 @@
 	<SingleplayerModule value="true"/>
 	<MultiplayerModule value="false"/>
 	<DependedModules>
-		<DependedModule Id="Native" DependentVersion = "e1.8.0.318937"/>
-		<DependedModule Id="SandBoxCore" DependentVersion = "e1.8.0.318937"/>
-		<DependedModule Id="Sandbox" DependentVersion = "e1.8.0.318937"/>
+		<DependedModule Id="Native" DependentVersion = "v1.5.0"/>
+		<DependedModule Id="SandBoxCore" DependentVersion = "v1.5.0"/>
+		<DependedModule Id="Sandbox" DependentVersion = "v1.5.0"/>
 	</DependedModules>
 	<SubModules>
 		<SubModule>
@@ -28,13 +28,6 @@
 				<GameType value = "CampaignStoryMode"/>
 			</IncludedGameTypes>
 		</XmlNode>    
-		<XmlNode>
-			<XmlName id="SPCultures" path="cultures"/>
-			<IncludedGameTypes>
-				<GameType value = "Campaign"/>
-				<GameType value = "CampaignStoryMode"/>
-			</IncludedGameTypes>
-		</XmlNode>
 		<XmlNode>
 			<XmlName id="Factions" path="clans"/>
 			<IncludedGameTypes>
