@@ -105,29 +105,28 @@ namespace CalradianDeserters.Behaviors
                 var defeatedLeader = mapEvent.GetLeaderParty(mapEvent.DefeatedSide);
                 var winningLeader = mapEvent.GetLeaderParty(mapEvent.WinningSide);
 
-                var chance = 0.6f;
-                if (defeatedLeader?.MobileParty?.Army != null)
+
+                if (MBRandom.RandomFloat >= Settings.GetInstance().BaseSpawnPartyChance)
                 {
-                    chance = 0.75f;
+                    return;
                 }
 
-                var condition = MBRandom.RandomFloat < chance && defeatedLeader.IsMobile && winningLeader.IsMobile &&
-                    ((defeatedLeader.MobileParty.IsLordParty || defeatedLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true)
-                    && (winningLeader.MobileParty.IsLordParty || winningLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true) && 
-                    defeatedLeader.MapFaction != null &&
-                    winningLeader.MapFaction != null &&
-                    defeatedLeader.MapFaction.IsKingdomFaction);
-
-                if (condition)
+                if (!defeatedLeader.IsMobile || !winningLeader.IsMobile || defeatedLeader.MapFaction == null || !defeatedLeader.MapFaction.IsKingdomFaction)
                 {
-                    var homeSettlement = mapEvent.MapEventSettlement ?? SettlementHelper.FindNearestVillage(toMapPoint: winningLeader.MobileParty);
-                    var troopRoster = TroopRoster.CreateDummyTroopRoster();
-                    var count = (int)(defeatedLeader.MapEventSide.Casualties / 5);
-
-                    var finalRoster = GetRandomTroopsFromRoster(troopRoster, count);
-
-                    CreateDeserterParty(homeSettlement, GetDeserterClan(defeatedLeader.MapFaction), defeatedLeader.MapFaction, finalRoster, mapEvent.Position);
+                    return;
                 }
+
+                if (!(defeatedLeader.MobileParty.IsLordParty || defeatedLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true) ||
+                    !(winningLeader.MobileParty.IsLordParty || winningLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true))
+                {
+                    return;
+                }
+
+                var count = (int)(defeatedLeader.MapEventSide.Casualties / 10);
+                var troopRoster = GetTroopsForParty(GetDeserterClan(defeatedLeader.MapFaction), MBMath.ClampInt(count, 0, 15));
+
+                var homeSettlement = mapEvent.MapEventSettlement ?? SettlementHelper.FindNearestVillage(toMapPoint: winningLeader.MobileParty);
+                CreateDeserterParty(homeSettlement, GetDeserterClan(defeatedLeader.MapFaction), defeatedLeader.MapFaction, troopRoster, mapEvent.Position);
             }
         }
         private void OnMobilePartyDestroyed(MobileParty mobileParty, PartyBase destroyerParty)
@@ -145,7 +144,6 @@ namespace CalradianDeserters.Behaviors
             var searchData = MobileParty.StartFindingLocatablesAroundPosition(party.Position2D, party.SeeingRange);
             var mobileParty = MobileParty.FindNextLocatable(ref searchData);
 
-
             MobileParty selectedTarget = null;
             MobileParty fleeTarget = null;
 
@@ -153,7 +151,7 @@ namespace CalradianDeserters.Behaviors
 
             while (mobileParty != null)
             {
-                if (mobileParty.IsActive && (mobileParty.IsVillager || mobileParty.IsCaravan || mobileParty.IsLordParty || 
+                if (mobileParty.IsActive && (mobileParty.IsVillager || mobileParty.IsCaravan || mobileParty.IsLordParty ||
                     (mobileParty.IsMilitia && mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsVillage)))
                 {
                     var enemyStrength = mobileParty.GetTotalStrengthWithFollowers();
@@ -195,9 +193,9 @@ namespace CalradianDeserters.Behaviors
 
                 for (int i = 0; i < tryCount; i++)
                 {
-                    targetPosition = targetDirectionNormalized * 5+ party.Position2D;
+                    targetPosition = targetDirectionNormalized * 5 + party.Position2D;
                     targetPosition.RotateCCW((i * 360 / tryCount) * MathF.PI / 180);
-                    
+
                     var faceIndex = Campaign.Current.MapSceneWrapper.GetFaceIndex(targetPosition);
 
                     if (faceIndex.IsValid())
@@ -214,7 +212,7 @@ namespace CalradianDeserters.Behaviors
                 SetPartyAiAction.GetActionForEngagingParty(party, selectedTarget);
                 DisableThinkForHours(party, 12);
             }
-            else if (selectedTarget != null && selectedTarget.IsMilitia && !selectedTarget.CurrentSettlement.IsRaided 
+            else if (selectedTarget != null && selectedTarget.IsMilitia && !selectedTarget.CurrentSettlement.IsRaided
                     && !selectedTarget.CurrentSettlement.IsUnderRaid)
             {
                 SetPartyAiAction.GetActionForRaidingSettlement(party, selectedTarget.CurrentSettlement);
@@ -240,22 +238,65 @@ namespace CalradianDeserters.Behaviors
 
         private void CreateDeserterParty(Settlement homeSettlement, Clan deserterClan, IFaction deserterOf, TroopRoster finalRoster, Vec2 position)
         {
-            var party = DeserterPartyComponent.CreateDeserterParty("deserter_party_1", deserterClan, deserterOf, homeSettlement, finalRoster,position, 5, 2);
+            var party = DeserterPartyComponent.CreateDeserterParty("deserter_party_1", deserterClan, deserterOf, homeSettlement, finalRoster, position, 5, 2);
             _deserterParties.Add(party);
             ClearDecision(party);
         }
 
 
-        private static TroopRoster GetRandomTroopsFromRoster(TroopRoster troopRoster, int t)
+        private static TroopRoster GetTroopsForParty(Clan deserterClan, int extraTroops = 0)
         {
             var roster = TroopRoster.CreateDummyTroopRoster();
+            var pt = deserterClan.DefaultPartyTemplate;
 
-            for (int i = 0; i < t && troopRoster.Count > 0; i++)
+            for (var i = 0; i < Settings.Instance.MinimumPartyTroopSize; i++)
             {
-                var rand = MBRandom.RandomInt(0, troopRoster.Count);
-                var troop = troopRoster.GetCharacterAtIndex(rand);
-                troopRoster.AddToCountsAtIndex(rand, -1);
-                roster.AddToCounts(troop, 1);
+                var selectedStack = -1;
+
+                var totalRandom = 0.0f;
+                for (var j = 0; j < pt.Stacks.Count; j++)
+                {
+                    if (pt.Stacks[j].Character.Tier < Settings.Instance.MinimumTroopTier)
+                    {
+                        totalRandom +=
+                    (pt.Stacks[j].Character.IsRanged ? 6.0f : (!pt.Stacks[j].Character.IsMounted ? 2.0f : 1.0f)) *
+                    ((pt.Stacks[j].MaxValue + pt.Stacks[j].MinValue) / 2.0f);
+                    }
+                }
+
+                var randomValue = MBRandom.RandomFloat * totalRandom;
+                var selectedRandom = randomValue;
+
+                for (var j = 0; j < pt.Stacks.Count; j++)
+                {
+                    selectedRandom -=
+                        (pt.Stacks[j].Character.IsRanged ? 6.0f : (!pt.Stacks[j].Character.IsMounted ? 2.0f : 1.0f)) *
+                        ((pt.Stacks[j].MaxValue + pt.Stacks[j].MinValue) / 2.0f);
+
+                    if (selectedRandom < 0)
+                    {
+                        selectedStack = j;
+
+                        break;
+                    }
+                }
+                CharacterObject troopsObjectRef = null;
+
+                if (selectedStack < 0)
+                {
+                    troopsObjectRef = deserterClan.BasicTroop;
+                }
+                else
+                {
+                    troopsObjectRef = pt.Stacks[selectedStack].Character;
+                }
+
+                roster.AddToCounts(troopsObjectRef, 1);
+            }
+
+            if (extraTroops > 0)
+            {
+                roster.AddToCounts(deserterClan.BasicTroop, 1);
             }
 
             return roster;

@@ -1,4 +1,4 @@
-﻿using CalradianPatrols.Base;
+﻿using CalradianDeserters.Base;
 using MCM.Abstractions.Attributes;
 using MCM.Abstractions.Attributes.v1;
 using MCM.Abstractions.Attributes.v2;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace CalradianDeserters.Settings
+namespace CalradianDeserters
 {
     public class Settings : AttributeGlobalSettings<Settings>
     {
@@ -26,29 +26,29 @@ namespace CalradianDeserters.Settings
         public int MinimumPartyTroopSize { get; set; } = 30;
 
         [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_1_0}Base Spawn Chance", 0f, 1f, "0%", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_1_1}Base chance to spawn a deserter aprty after battles.")]
-        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Patrols - Basic", GroupOrder = 0)]
+        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public float BaseSpawnPartyChance { get; set; } = 0.8f;
 
         [SettingProperty("{=str_calradiandeserters_settings_2_0}Attack Caravans", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_2_1}Deserters will attack caravan parties")]
-        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Patrols - Basic", GroupOrder = 0)]
+        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool AttackCaravans { get; set; } = true;
 
         [SettingProperty("{=str_calradiandeserters_settings_3_0}Attack Villagers", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_3_1}Deserters will attack villager parties")]
-        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Patrols - Basic", GroupOrder = 0)]
+        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool AttackVillagers { get; set; } = true;
 
 #if CALRADIAN_PATROLSV2
         [SettingProperty("{=str_calradiandeserters_settings_4_0}Attack Patrol Parties", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_4_1}Deserters will attack patrol parties")]
-        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Patrols - Basic", GroupOrder = 0)]
+        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool AttackPatrolParties { get; set; } = true;
 #endif
 
         [SettingProperty("{=str_calradiandeserters_settings_5_0}Raid Villages", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_5_1}Deserters will try to raid villages")]
-        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Patrols - Basic", GroupOrder = 0)]
+        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool RaidVillages { get; set; } = true;
 
         [SettingProperty("{=str_calradiandeserters_settings_6_0}Merge Deserter Parties", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_6_1}Different deserter parties will try to merge into a more powerful party")]
-        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Patrols - Basic", GroupOrder = 0)]
+        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool MergeParties { get; set; } = true;
 
 

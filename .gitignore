@@ -403,6 +403,6 @@ bin/Win64_Shipping_Client/*.dll
 bin/Win64_Shipping_Client/*.pdb
 !bin/Win64_Shipping_Client/MCM*.dll
 !bin/Win64_Shipping_Client/MCM*.pdb
-!bin/Win64_Shipping_Client/CalradiaPatrols*.dll
-!bin/Win64_Shipping_Client/CalradiaPatrols*.pdb
+!bin/Win64_Shipping_Client/CalradianDeserters*.dll
+!bin/Win64_Shipping_Client/CalradianDeserters*.pdb
 

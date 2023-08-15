@@ -1,11 +1,4 @@
-﻿using CalradianDeserters.Settings;
-using SandBox.View.Map;
-using System.Linq;
-using TaleWorlds.CampaignSystem;
-using TaleWorlds.Engine.Screens;
-using TaleWorlds.Library;
-
-namespace CalradianPatrols.Base
+﻿namespace CalradianDeserters.Base
 {
     public class CalradianDesertersModuleManager
     {
