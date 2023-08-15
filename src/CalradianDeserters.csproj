@@ -31,11 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MCMv4">
-      <HintPath>..\..\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client\MCMv4.dll</HintPath>
-    </Reference>
-    <Reference Include="MCMv4.UI">
-      <HintPath>..\..\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client\MCMv4.UI.dll</HintPath>
+    <Reference Include="MCMv5, Version=5.9.1.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Calradian-Patrols-V2\bin\Win64_Shipping_Client\MCMv5.dll</HintPath>
     </Reference>
     <Reference Include="SandBox">
       <HintPath>..\..\SandBox\bin\Win64_Shipping_Client\SandBox.dll</HintPath>
@@ -101,14 +99,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Base\CalradianDesertersSubModule.cs" />
-    <Compile Include="Behaviors\CalradianDesertersCampaignBehavior.cs" />
-    <Compile Include="Components\DeserterPartyComponent.cs" />
-    <Compile Include="EncyclopediaPages\CustomClanEncyclopediaPage.cs" />
-    <Compile Include="Extensions\CalradianDesertersExtensions.cs" />
-    <Compile Include="Models\CustomFoodConsumptionModel.cs" />
+    <Compile Include="CalradianDeserters\Base\CalradianDesertersModuleManager.cs" />
+    <Compile Include="CalradianDeserters\Base\CalradianDesertersSubModule.cs" />
+    <Compile Include="CalradianDeserters\Behaviors\CalradianDesertersCampaignBehavior.cs" />
+    <Compile Include="CalradianDeserters\Components\DeserterPartyComponent.cs" />
+    <Compile Include="CalradianDeserters\EncyclopediaPages\CustomClanEncyclopediaPage.cs" />
+    <Compile Include="CalradianDeserters\Extensions\CalradianDesertersExtensions.cs" />
+    <Compile Include="CalradianDeserters\Models\CustomFoodConsumptionModel.cs" />
+    <Compile Include="CalradianDeserters\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Save\CalradianDesertersSaveableTypeDefiner.cs" />
+    <Compile Include="CalradianDeserters\Save\CalradianDesertersSaveableTypeDefiner.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Bannerlord.MCM" Version="5.9.1" IncludeAssets="compile" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

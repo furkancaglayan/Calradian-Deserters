@@ -31,14 +31,15 @@ namespace CalradianDeserters.Behaviors
         //TODO: ADD DAİLY CHANCE OF CREATING DESERTER PARTIES TO CASTLES
         private Dictionary<MobileParty, CampaignTime> _nextDecisionTimes = new Dictionary<MobileParty, CampaignTime>();
         private List<MobileParty> _deserterParties = new List<MobileParty>();
+        private Dictionary<string, Clan> _deserterClans = new Dictionary<string, Clan>();
+
+
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunchedEvent);
-            CampaignEvents.TickEvent.AddNonSerializedListener(this, Tick);
             CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, HourlyTick);
             CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, HourlyTickParty);
             CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
-            CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, MobilePartyCreated);
             CampaignEvents.MobilePartyDestroyed.AddNonSerializedListener(this, OnMobilePartyDestroyed);
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreated);
             CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
@@ -46,33 +47,7 @@ namespace CalradianDeserters.Behaviors
 
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
         {
-            foreach (var kingdom in Kingdom.All)
-            {
-                foreach (var kingdomId in Kingdom.All)
-                {
-                    var deserterClan = GetDeserterClan(kingdomId);
-                    if (deserterClan == null)
-                    {
-                        Debug.FailedAssert("deserterClan == null");
-                    }
-                    else if (!kingdom.IsAtWarWith(deserterClan))
-                    {
-                        DeclareWarAction.ApplyByDefault(kingdom, deserterClan);
-                    }
-                }
-            }
-
-            foreach (var clan in Clan.NonBanditFactions)
-            {
-                foreach (var kingdomId in Kingdom.All)
-                {
-                    var deserterClan = GetDeserterClan(kingdomId);
-                    if (!clan.IsAtWarWith(deserterClan) && !IsDeserterClan(clan))
-                    {
-                        DeclareWarAction.ApplyByDefault(clan, deserterClan);
-                    }
-                }
-            }
+            InitializeDeserterClans();
 
             foreach (var deserterParty in MobileParty.All)
             {
@@ -102,10 +77,6 @@ namespace CalradianDeserters.Behaviors
 
         }
 
-        private void Tick(float dt)
-        {
-        }
-
         private void HourlyTickParty(MobileParty party)
         {
             if (/*DisableAi || */party.MapEvent != null || (party.CurrentSettlement != null && party.CurrentSettlement.IsUnderSiege))
@@ -122,68 +93,9 @@ namespace CalradianDeserters.Behaviors
             }
         }
 
-        private void MobilePartyCreated(MobileParty mobileParty)
-        {
-        }
-
         private void OnNewGameCreated(CampaignGameStarter campaignGameStarter)
         {
-            foreach (var kingdom in Kingdom.All)
-            {
-                var deserterClan = GetDeserterClan(kingdom);
-
-                if (deserterClan == null)
-                {
-                    Debug.FailedAssert("deserterClan == null");
-                }
-                else
-                {
-                    var deserterLeader = HeroCreator.CreateSpecialHero(deserterClan.MinorFactionCharacterTemplates.GetRandomElementInefficiently(), null, deserterClan);
-                    deserterLeader.ChangeState(Hero.CharacterStates.Dead);
-                    deserterLeader.CharacterObject.HiddenInEncylopedia = true;
-
-                    deserterClan.SetLeader(deserterLeader);
-
-
-                    foreach (var kingdom2 in Kingdom.All)
-                    {
-                        if (!kingdom2.IsAtWarWith(deserterClan))
-                        {
-                            DeclareWarAction.ApplyByDefault(kingdom2, deserterClan);
-                        }
-                    }
-
-
-                    foreach (var clan in Clan.NonBanditFactions)
-                    {
-                        if (!clan.IsAtWarWith(deserterClan) && !IsDeserterClan(clan))
-                        {
-                            DeclareWarAction.ApplyByDefault(clan, deserterClan);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void GenerateRandomParties(int n = 4)
-        {
-            var x = 25;
-            var y = 55;
-
-            foreach (var kingdom in Kingdom.All)
-            {
-                for (int i = 0; i < n; i++)
-                {
-                    var roster = TroopRoster.CreateDummyTroopRoster();
-                    const string troopId = "deserter";
-                    var character = Campaign.Current.ObjectManager.GetObject<CharacterObject>(troopId);
-                    roster.AddToCounts(character, MBRandom.RandomInt(x, y));
-                    var randomVillage = kingdom.Villages.GetRandomElement();
-                    var position = Helpers.MobilePartyHelper.FindReachablePointAroundPosition(randomVillage.Settlement.Position2D, 10, 5);
-
-                    CreateDeserterParty(randomVillage.Settlement, GetDeserterClan(kingdom), kingdom, roster, position);
-                }
-            }
+            InitializeDeserterClans();
         }
 
         private void OnMapEventEnded(MapEvent mapEvent)
@@ -333,18 +245,6 @@ namespace CalradianDeserters.Behaviors
             ClearDecision(party);
         }
 
-        private static PropertyInfo GetPropertyInfo(Type type, string propertyName)
-        {
-            PropertyInfo propInfo = null;
-            do
-            {
-                propInfo = type.GetProperty(propertyName,
-                       BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                type = type.BaseType;
-            }
-            while (propInfo == null && type != null);
-            return propInfo;
-        }
 
         private static TroopRoster GetRandomTroopsFromRoster(TroopRoster troopRoster, int t)
         {
@@ -384,15 +284,63 @@ namespace CalradianDeserters.Behaviors
 
         private bool IsDeserterClan(Clan clan)
         {
+            if (_deserterClans.TryGetValue(clan.StringId, out var v) && v == clan)
+            {
+                return true;
+            }
+
             foreach (var kingdom in Kingdom.All)
             {
                 if (clan == GetDeserterClan(kingdom))
                 {
+                    _deserterClans[clan.StringId] = clan;
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private void InitializeDeserterClans()
+        {
+            foreach (var kingdom in Kingdom.All)
+            {
+                var deserterClan = GetDeserterClan(kingdom);
+
+                if (deserterClan == null)
+                {
+                    Debug.FailedAssert("deserterClan == null");
+                }
+                else
+                {
+
+                    if (deserterClan.Leader == null)
+                    {
+                        var deserterLeader = HeroCreator.CreateSpecialHero(deserterClan.MinorFactionCharacterTemplates.GetRandomElementInefficiently(), null, deserterClan);
+                        deserterLeader.ChangeState(Hero.CharacterStates.Dead);
+                        deserterLeader.CharacterObject.HiddenInEncylopedia = true;
+
+                        deserterClan.SetLeader(deserterLeader);
+                    }
+
+                    foreach (var kingdom2 in Kingdom.All)
+                    {
+                        if (!kingdom2.IsAtWarWith(deserterClan))
+                        {
+                            DeclareWarAction.ApplyByDefault(kingdom2, deserterClan);
+                        }
+                    }
+
+
+                    foreach (var clan in Clan.NonBanditFactions)
+                    {
+                        if (!clan.IsAtWarWith(deserterClan) && !IsDeserterClan(clan))
+                        {
+                            DeclareWarAction.ApplyByDefault(clan, deserterClan);
+                        }
+                    }
+                }
+            }
         }
     }
 }

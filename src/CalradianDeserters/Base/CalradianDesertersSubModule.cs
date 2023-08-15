@@ -1,4 +1,6 @@
-﻿using CalradianDeserters.Behaviors;
+﻿#define CALRADIAN_DESERTERS
+
+using CalradianDeserters.Behaviors;
 using CalradianDeserters.Models;
 using System;
 using System.Collections.Generic;
