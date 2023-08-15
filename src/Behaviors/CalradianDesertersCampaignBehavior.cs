@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.LogEntries;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -20,10 +21,16 @@ namespace CalradianDeserters.Behaviors
 {
     public class CalradianDesertersCampaignBehavior : CampaignBehaviorBase
     {
-        private Clan Deserters => Clan.FindFirst(x => x.StringId == "deserters");
+        //TODO: Create deserter parties after battles with a chance
+        //Include minor faction troops in them
+        //Raid villages
+        //merge
+        //save battle data to xml or sheets
+
+
+        //TODO: ADD DAİLY CHANCE OF CREATING DESERTER PARTIES TO CASTLES
         private Dictionary<MobileParty, CampaignTime> _nextDecisionTimes = new Dictionary<MobileParty, CampaignTime>();
         private List<MobileParty> _deserterParties = new List<MobileParty>();
-        private List<MobileParty> _obsoleteDeserterParties = new List<MobileParty>();
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunchedEvent);
@@ -39,6 +46,34 @@ namespace CalradianDeserters.Behaviors
 
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
         {
+            foreach (var kingdom in Kingdom.All)
+            {
+                foreach (var kingdomId in Kingdom.All)
+                {
+                    var deserterClan = GetDeserterClan(kingdomId);
+                    if (deserterClan == null)
+                    {
+                        Debug.FailedAssert("deserterClan == null");
+                    }
+                    else if (!kingdom.IsAtWarWith(deserterClan))
+                    {
+                        DeclareWarAction.ApplyByDefault(kingdom, deserterClan);
+                    }
+                }
+            }
+
+            foreach (var clan in Clan.NonBanditFactions)
+            {
+                foreach (var kingdomId in Kingdom.All)
+                {
+                    var deserterClan = GetDeserterClan(kingdomId);
+                    if (!clan.IsAtWarWith(deserterClan) && !IsDeserterClan(clan))
+                    {
+                        DeclareWarAction.ApplyByDefault(clan, deserterClan);
+                    }
+                }
+            }
+
             foreach (var deserterParty in MobileParty.All)
             {
                 if (deserterParty.IsDeserterParty())
@@ -50,13 +85,6 @@ namespace CalradianDeserters.Behaviors
 
         private void HourlyTick()
         {
-            for (int i = _obsoleteDeserterParties.Count - 1; i >= 0 ; i--)
-            {
-                _obsoleteDeserterParties[i].ActualClan = Deserters;
-                DestroyPartyAction.Apply(null, _obsoleteDeserterParties[i]);
-            }
-
-            _obsoleteDeserterParties.Clear();
         }
 
         private void OnSessionLaunchedEvent(CampaignGameStarter campaignGameStarter)
@@ -76,12 +104,6 @@ namespace CalradianDeserters.Behaviors
 
         private void Tick(float dt)
         {
-#if DEBUG
-            foreach (var party in _deserterParties)
-            {
-                party.IsVisible = true;
-            }
-#endif
         }
 
         private void HourlyTickParty(MobileParty party)
@@ -91,7 +113,7 @@ namespace CalradianDeserters.Behaviors
                 return;
             }
 
-            if (party.PartyComponent is DeserterPartyComponent deserterPartyComponent)
+            if (party.IsDeserterParty(out var deserterPartyComponent))
             {
                 if (_nextDecisionTimes[party].IsPast)
                 {
@@ -102,23 +124,45 @@ namespace CalradianDeserters.Behaviors
 
         private void MobilePartyCreated(MobileParty mobileParty)
         {
-            if (mobileParty.ActualClan == Deserters && !IsDeserter(mobileParty))
-            {
-                _obsoleteDeserterParties.Add(mobileParty);
-            }
         }
 
         private void OnNewGameCreated(CampaignGameStarter campaignGameStarter)
         {
-            foreach (var mobileParty in MobileParty.All.ToList())
+            foreach (var kingdom in Kingdom.All)
             {
-                if (mobileParty.ActualClan == Deserters && !IsDeserter(mobileParty))
+                var deserterClan = GetDeserterClan(kingdom);
+
+                if (deserterClan == null)
                 {
-                    DestroyPartyAction.Apply(null, mobileParty);
+                    Debug.FailedAssert("deserterClan == null");
+                }
+                else
+                {
+                    var deserterLeader = HeroCreator.CreateSpecialHero(deserterClan.MinorFactionCharacterTemplates.GetRandomElementInefficiently(), null, deserterClan);
+                    deserterLeader.ChangeState(Hero.CharacterStates.Dead);
+                    deserterLeader.CharacterObject.HiddenInEncylopedia = true;
+
+                    deserterClan.SetLeader(deserterLeader);
+
+
+                    foreach (var kingdom2 in Kingdom.All)
+                    {
+                        if (!kingdom2.IsAtWarWith(deserterClan))
+                        {
+                            DeclareWarAction.ApplyByDefault(kingdom2, deserterClan);
+                        }
+                    }
+
+
+                    foreach (var clan in Clan.NonBanditFactions)
+                    {
+                        if (!clan.IsAtWarWith(deserterClan) && !IsDeserterClan(clan))
+                        {
+                            DeclareWarAction.ApplyByDefault(clan, deserterClan);
+                        }
+                    }
                 }
             }
-
-            GenerateRandomParties();
         }
 
         private void GenerateRandomParties(int n = 4)
@@ -137,7 +181,7 @@ namespace CalradianDeserters.Behaviors
                     var randomVillage = kingdom.Villages.GetRandomElement();
                     var position = Helpers.MobilePartyHelper.FindReachablePointAroundPosition(randomVillage.Settlement.Position2D, 10, 5);
 
-                    CreateDeserterParty(randomVillage.Settlement, roster, position);
+                    CreateDeserterParty(randomVillage.Settlement, GetDeserterClan(kingdom), kingdom, roster, position);
                 }
             }
         }
@@ -149,20 +193,28 @@ namespace CalradianDeserters.Behaviors
                 var defeatedLeader = mapEvent.GetLeaderParty(mapEvent.DefeatedSide);
                 var winningLeader = mapEvent.GetLeaderParty(mapEvent.WinningSide);
 
-                if (defeatedLeader.IsMobile && winningLeader.IsMobile && defeatedLeader.MobileParty.Army != null && winningLeader.MobileParty.Army != null)
+                var chance = 0.6f;
+                if (defeatedLeader?.MobileParty?.Army != null)
+                {
+                    chance = 0.75f;
+                }
+
+                var condition = MBRandom.RandomFloat < chance && defeatedLeader.IsMobile && winningLeader.IsMobile &&
+                    ((defeatedLeader.MobileParty.IsLordParty || defeatedLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true)
+                    && (winningLeader.MobileParty.IsLordParty || winningLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true) && 
+                    defeatedLeader.MapFaction != null &&
+                    winningLeader.MapFaction != null &&
+                    defeatedLeader.MapFaction.IsKingdomFaction);
+
+                if (condition)
                 {
                     var homeSettlement = mapEvent.MapEventSettlement ?? SettlementHelper.FindNearestVillage(toMapPoint: winningLeader.MobileParty);
                     var troopRoster = TroopRoster.CreateDummyTroopRoster();
-                    var diedInBattleProperty = GetPropertyInfo(typeof(MapEventParty), "DiedInBattle");
-                    foreach (var mapEventParty in defeatedLeader.MapEventSide.Parties)
-                    {
-                        var diedInBattle = diedInBattleProperty.GetMethod.Invoke(mapEventParty, new object[] { });
-                        troopRoster.Add((TroopRoster)diedInBattle);
-                    }
+                    var count = (int)(defeatedLeader.MapEventSide.Casualties / 5);
 
-                    var count = (int)(defeatedLeader.MapEventSide.Casualties / 10);
                     var finalRoster = GetRandomTroopsFromRoster(troopRoster, count);
-                    CreateDeserterParty(homeSettlement, finalRoster, mapEvent.Position);
+
+                    CreateDeserterParty(homeSettlement, GetDeserterClan(defeatedLeader.MapFaction), defeatedLeader.MapFaction, finalRoster, mapEvent.Position);
                 }
             }
         }
@@ -173,8 +225,6 @@ namespace CalradianDeserters.Behaviors
 
         public override void SyncData(IDataStore dataStore)
         {
-            dataStore.SyncData("_obsoleteDeserterParties", ref _obsoleteDeserterParties);
-            //dataStore.SyncData("_deserterParties", ref _deserterParties);
             dataStore.SyncData("_desertersDecisionTimes", ref _nextDecisionTimes);
         }
 
@@ -209,6 +259,7 @@ namespace CalradianDeserters.Behaviors
                         }
                         else
                         {
+                            mobileParty = MobileParty.FindNextLocatable(ref searchData);
                             continue;
                         }
                     }
@@ -275,15 +326,11 @@ namespace CalradianDeserters.Behaviors
             _nextDecisionTimes[party] = CampaignTime.HoursFromNow(hours);
         }
 
-        private void CreateDeserterParty(Settlement homeSettlement, TroopRoster finalRoster, Vec2 position)
+        private void CreateDeserterParty(Settlement homeSettlement, Clan deserterClan, IFaction deserterOf, TroopRoster finalRoster, Vec2 position)
         {
-            var party = DeserterPartyComponent.CreateDeserterParty("deserter_party_1", Deserters, homeSettlement, finalRoster,position, 5, 2);
+            var party = DeserterPartyComponent.CreateDeserterParty("deserter_party_1", deserterClan, deserterOf, homeSettlement, finalRoster,position, 5, 2);
             _deserterParties.Add(party);
             ClearDecision(party);
-        }
-        private bool IsDeserter(MobileParty mobileParty)
-        {
-            return mobileParty.PartyComponent is DeserterPartyComponent;
         }
 
         private static PropertyInfo GetPropertyInfo(Type type, string propertyName)
@@ -323,6 +370,29 @@ namespace CalradianDeserters.Behaviors
             var distance = Campaign.Current.Models.MapDistanceModel.GetDistance(party, enemyParty);
 
             return multiplier * (strengthFactor - 0.5f) + (1 / (distance * distance));
+        }
+
+        private Clan GetDeserterClan(IFaction faction)
+        {
+            if (faction.StringId == "empire" || faction.StringId == "empire_w" || faction.StringId == "empire_s")
+            {
+                return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
+            }
+
+            return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_{faction.StringId}");
+        }
+
+        private bool IsDeserterClan(Clan clan)
+        {
+            foreach (var kingdom in Kingdom.All)
+            {
+                if (clan == GetDeserterClan(kingdom))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
