@@ -1,15 +1,34 @@
-﻿using System;
+﻿using CalradianDeserters.Components;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 
 namespace CalradianDeserters.Extensions
 {
     public static class CalradianDesertersExtensions
     {
+        public static bool IsDeserterParty(this MobileParty mobileParty)
+        {
+            return mobileParty.PartyComponent is DeserterPartyComponent;
+        }
+
+        public static bool IsDeserterParty(this MobileParty mobileParty, out DeserterPartyComponent deserterPartyComponent)
+        {
+            deserterPartyComponent = null;
+            if (mobileParty.PartyComponent != null && mobileParty.PartyComponent is DeserterPartyComponent partyComponent)
+            {
+                deserterPartyComponent = partyComponent;
+                return true;
+            }
+
+            return false;
+        }
+
         public static T GetModelByType<T>(this CampaignGameStarter campaignGameStarter) where T : GameModel
         {
             return (T)campaignGameStarter.Models.LastOrDefault(x => x is T);

@@ -34,6 +34,18 @@ namespace CalradianDeserters.Behaviors
             CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, MobilePartyCreated);
             CampaignEvents.MobilePartyDestroyed.AddNonSerializedListener(this, OnMobilePartyDestroyed);
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreated);
+            CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
+        }
+
+        private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
+        {
+            foreach (var deserterParty in MobileParty.All)
+            {
+                if (deserterParty.IsDeserterParty())
+                {
+                    _deserterParties.Add(deserterParty);
+                }
+            }
         }
 
         private void HourlyTick()
@@ -162,20 +174,22 @@ namespace CalradianDeserters.Behaviors
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData("_obsoleteDeserterParties", ref _obsoleteDeserterParties);
-            dataStore.SyncData("_deserterParties", ref _deserterParties);
+            //dataStore.SyncData("_deserterParties", ref _deserterParties);
             dataStore.SyncData("_desertersDecisionTimes", ref _nextDecisionTimes);
         }
 
         private void MakeNewDecision(MobileParty party)
         {
-            var partiesAround = new MobilePartiesAroundPositionList(32).GetPartiesAroundPosition(party.Position2D, party.SeeingRange);
+            var searchData = MobileParty.StartFindingLocatablesAroundPosition(party.Position2D, party.SeeingRange);
+            var mobileParty = MobileParty.FindNextLocatable(ref searchData);
+
 
             MobileParty selectedTarget = null;
             MobileParty fleeTarget = null;
 
             var bestAttackScore = 0f;
 
-            foreach (var mobileParty in partiesAround)
+            while (mobileParty != null)
             {
                 if (mobileParty.IsActive && (mobileParty.IsVillager || mobileParty.IsCaravan || mobileParty.IsLordParty || 
                     (mobileParty.IsMilitia && mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsVillage)))
@@ -206,6 +220,8 @@ namespace CalradianDeserters.Behaviors
                         bestAttackScore = attackScore;
                     }
                 }
+
+                mobileParty = MobileParty.FindNextLocatable(ref searchData);
             }
 
             if (fleeTarget != null)
@@ -227,7 +243,7 @@ namespace CalradianDeserters.Behaviors
                     }
                 }
 
-                party.SetMoveGoToPoint(targetPosition);
+                party.Ai.SetMoveGoToPoint(targetPosition);
                 DisableThinkForHours(party, 2);
             }
             else if (selectedTarget != null && !selectedTarget.IsMilitia)

@@ -25,9 +25,6 @@ namespace CalradianDeserters.Base
                 CampaignGameStarter campaignStarter = (CampaignGameStarter)gameStarter;
                 AddModels(campaignStarter);
                 AddBehaviors(campaignStarter);
-
-                //campaignStarter.LoadGameTexts(ModuleHelper.GetModuleFullPath("CalradianPatrolsV2") + "ModuleData/module_strings.xml");
-                //ModManager.OnGameStart();
             }
         }
 

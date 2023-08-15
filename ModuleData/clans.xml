@@ -10,7 +10,7 @@
 			 culture="Culture.looters"
 			 default_party_template="PartyTemplate.looters_template"
 			 settlement_banner_mesh="none"
-			 is_bandit="true"
+			 is_bandit="false"
 			 is_outlaw="true"
 			 name="{=deserters_clan}Deserters"
 			 tier="1"></Faction>
