@@ -39,6 +39,7 @@ namespace CalradianDeserters.Base
         {
             campaignStarter.AddModel(new CustomFoodConsumptionModel(campaignStarter));
             campaignStarter.AddModel(new CustomDiplomacyModel(campaignStarter));
+            campaignStarter.AddModel(new CustomPartySpeedCalculatingModel(campaignStarter));
         }
     }
 }
