@@ -12,6 +12,16 @@ namespace CalradianDeserters.Extensions
 {
     public static class CalradianDesertersExtensions
     {
+        public static bool IsDeserterClan(this IFaction faction)
+        {
+            if (faction is Clan clan)
+            {
+                return clan.StringId.StartsWith("deserters_");
+            }
+
+            return false;
+        }
+
         public static bool IsDeserterParty(this MobileParty mobileParty)
         {
             return mobileParty.PartyComponent is DeserterPartyComponent;

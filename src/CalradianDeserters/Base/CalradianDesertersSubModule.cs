@@ -38,6 +38,7 @@ namespace CalradianDeserters.Base
         private void AddModels(CampaignGameStarter campaignStarter)
         {
             campaignStarter.AddModel(new CustomFoodConsumptionModel(campaignStarter));
+            campaignStarter.AddModel(new CustomDiplomacyModel(campaignStarter));
         }
     }
 }
