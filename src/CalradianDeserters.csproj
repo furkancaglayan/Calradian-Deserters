@@ -105,7 +105,9 @@
     <Compile Include="CalradianDeserters\Components\DeserterPartyComponent.cs" />
     <Compile Include="CalradianDeserters\EncyclopediaPages\CustomClanEncyclopediaPage.cs" />
     <Compile Include="CalradianDeserters\Extensions\CalradianDesertersExtensions.cs" />
+    <Compile Include="CalradianDeserters\Models\CustomDiplomacyModel.cs" />
     <Compile Include="CalradianDeserters\Models\CustomFoodConsumptionModel.cs" />
+    <Compile Include="CalradianDeserters\Models\CustomPartySpeedCalculatingModel.cs" />
     <Compile Include="CalradianDeserters\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CalradianDeserters\Save\CalradianDesertersSaveableTypeDefiner.cs" />
