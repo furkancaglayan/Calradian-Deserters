@@ -16,6 +16,7 @@ using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.ObjectSystem;
 
 namespace CalradianDeserters.Behaviors
 {
@@ -32,6 +33,7 @@ namespace CalradianDeserters.Behaviors
         private Dictionary<MobileParty, CampaignTime> _nextDecisionTimes = new Dictionary<MobileParty, CampaignTime>();
         private List<MobileParty> _deserterParties = new List<MobileParty>();
         private Dictionary<string, Clan> _deserterClans = new Dictionary<string, Clan>();
+        private Dictionary<(IFaction, int), List<CharacterObject>> _troopTrees = new Dictionary<(IFaction, int), List<CharacterObject>>();
 
 
         public override void RegisterEvents()
@@ -43,6 +45,24 @@ namespace CalradianDeserters.Behaviors
             CampaignEvents.MobilePartyDestroyed.AddNonSerializedListener(this, OnMobilePartyDestroyed);
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreated);
             CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
+            CampaignEvents.OnCompanionClanCreatedEvent.AddNonSerializedListener(this, OnCompanionClanCreated);
+            CampaignEvents.KingdomCreatedEvent.AddNonSerializedListener(this, OnKingdomCreated);
+            CampaignEvents.RebellionFinished.AddNonSerializedListener(this, OnRebellionFinished);
+        }
+
+        private void OnRebellionFinished(Settlement settlement, Clan clan)
+        {
+            DeclareWarWithFaction(clan);
+        }
+
+        private void OnCompanionClanCreated(Clan clan)
+        {
+            DeclareWarWithFaction(clan);
+        }
+
+        private void OnKingdomCreated(Kingdom kingdom)
+        {
+            DeclareWarWithFaction(kingdom);
         }
 
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
@@ -116,6 +136,11 @@ namespace CalradianDeserters.Behaviors
                     return;
                 }
 
+                if (defeatedLeader.MobileParty.IsDeserterParty() || winningLeader.MobileParty.IsDeserterParty())
+                {
+                    return;
+                }
+
                 if (!(defeatedLeader.MobileParty.IsLordParty || defeatedLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true) ||
                     !(winningLeader.MobileParty.IsLordParty || winningLeader.MobileParty.LeaderHero?.IsMinorFactionHero == true))
                 {
@@ -123,7 +148,7 @@ namespace CalradianDeserters.Behaviors
                 }
 
                 var count = (int)(defeatedLeader.MapEventSide.Casualties / 10);
-                var troopRoster = GetTroopsForParty(GetDeserterClan(defeatedLeader.MapFaction), MBMath.ClampInt(count, 0, 15));
+                var troopRoster = GetTroopsForParty(defeatedLeader.MapFaction, MBMath.ClampInt(count, 0, 15));
 
                 var homeSettlement = mapEvent.MapEventSettlement ?? SettlementHelper.FindNearestVillage(toMapPoint: winningLeader.MobileParty);
                 CreateDeserterParty(homeSettlement, GetDeserterClan(defeatedLeader.MapFaction), defeatedLeader.MapFaction, troopRoster, mapEvent.Position);
@@ -244,59 +269,24 @@ namespace CalradianDeserters.Behaviors
         }
 
 
-        private static TroopRoster GetTroopsForParty(Clan deserterClan, int extraTroops = 0)
+        private TroopRoster GetTroopsForParty(IFaction deserterOf, int extraTroops = 0)
         {
             var roster = TroopRoster.CreateDummyTroopRoster();
-            var pt = deserterClan.DefaultPartyTemplate;
 
-            for (var i = 0; i < Settings.Instance.MinimumPartyTroopSize; i++)
+            var factionTroops = GetTroopTreeOfFaction(deserterOf);
+            var deserterTroops = GetTroopTreeOfFaction(GetDeserterClan(deserterOf));
+
+            if (factionTroops.Any())
             {
-                var selectedStack = -1;
-
-                var totalRandom = 0.0f;
-                for (var j = 0; j < pt.Stacks.Count; j++)
+                for (int i = 0; i < Settings.Instance.MinimumPartyTroopSize; i++)
                 {
-                    if (pt.Stacks[j].Character.Tier < Settings.Instance.MinimumTroopTier)
-                    {
-                        totalRandom +=
-                    (pt.Stacks[j].Character.IsRanged ? 6.0f : (!pt.Stacks[j].Character.IsMounted ? 2.0f : 1.0f)) *
-                    ((pt.Stacks[j].MaxValue + pt.Stacks[j].MinValue) / 2.0f);
-                    }
+                    roster.AddToCounts(factionTroops.GetRandomElement(), 1);
                 }
-
-                var randomValue = MBRandom.RandomFloat * totalRandom;
-                var selectedRandom = randomValue;
-
-                for (var j = 0; j < pt.Stacks.Count; j++)
-                {
-                    selectedRandom -=
-                        (pt.Stacks[j].Character.IsRanged ? 6.0f : (!pt.Stacks[j].Character.IsMounted ? 2.0f : 1.0f)) *
-                        ((pt.Stacks[j].MaxValue + pt.Stacks[j].MinValue) / 2.0f);
-
-                    if (selectedRandom < 0)
-                    {
-                        selectedStack = j;
-
-                        break;
-                    }
-                }
-                CharacterObject troopsObjectRef = null;
-
-                if (selectedStack < 0)
-                {
-                    troopsObjectRef = deserterClan.BasicTroop;
-                }
-                else
-                {
-                    troopsObjectRef = pt.Stacks[selectedStack].Character;
-                }
-
-                roster.AddToCounts(troopsObjectRef, 1);
             }
 
-            if (extraTroops > 0)
+            for (int i = 0; i < extraTroops + (Settings.Instance.MinimumPartyTroopSize - roster.TotalManCount); i++)
             {
-                roster.AddToCounts(deserterClan.BasicTroop, 1);
+                roster.AddToCounts(deserterTroops.GetRandomElement(), 1);
             }
 
             return roster;
@@ -347,6 +337,7 @@ namespace CalradianDeserters.Behaviors
             foreach (var kingdom in Kingdom.All)
             {
                 var deserterClan = GetDeserterClan(kingdom);
+                deserterClan.BasicTroop = MBObjectManager.Instance.GetObject<CharacterObject>("deserter");
 
                 if (deserterClan == null)
                 {
@@ -364,24 +355,56 @@ namespace CalradianDeserters.Behaviors
                         deserterClan.SetLeader(deserterLeader);
                     }
 
-                    foreach (var kingdom2 in Kingdom.All)
+
+                }
+            }
+
+            DeclareWarWithFactions();
+        }
+
+        private void DeclareWarWithFactions()
+        {
+            foreach (var kingdom in Kingdom.All)
+            {
+                var deserterClan = GetDeserterClan(kingdom);
+                foreach (var kingdom2 in Kingdom.All)
+                {
+                    if (!kingdom2.IsAtWarWith(deserterClan))
                     {
-                        if (!kingdom2.IsAtWarWith(deserterClan))
-                        {
-                            DeclareWarAction.ApplyByDefault(kingdom2, deserterClan);
-                        }
+                        DeclareWarAction.ApplyByDefault(kingdom2, deserterClan);
                     }
+                }
 
 
-                    foreach (var clan in Clan.NonBanditFactions)
+                foreach (var clan in Clan.NonBanditFactions)
+                {
+                    if (!clan.IsAtWarWith(deserterClan) && !IsDeserterClan(clan))
                     {
-                        if (!clan.IsAtWarWith(deserterClan) && !IsDeserterClan(clan))
-                        {
-                            DeclareWarAction.ApplyByDefault(clan, deserterClan);
-                        }
+                        DeclareWarAction.ApplyByDefault(clan, deserterClan);
                     }
                 }
             }
+        }
+
+        private void DeclareWarWithFaction(IFaction faction)
+        {
+            foreach (var kingdom in Kingdom.All)
+            {
+                var deserterClan = GetDeserterClan(kingdom);
+                DeclareWarAction.ApplyByDefault(faction, deserterClan);
+            }
+        }
+
+        private List<CharacterObject> GetTroopTreeOfFaction(IFaction faction)
+        {
+            if (_troopTrees.TryGetValue((faction, Settings.Instance.MinimumTroopTier), out var tree))
+            {
+                return tree;
+            }
+
+            tree = CharacterHelper.GetTroopTree(faction.BasicTroop, Settings.Instance.MinimumTroopTier).ToList();
+            _troopTrees.Add((faction, Settings.Instance.MinimumTroopTier), tree);
+            return tree;
         }
     }
 }
