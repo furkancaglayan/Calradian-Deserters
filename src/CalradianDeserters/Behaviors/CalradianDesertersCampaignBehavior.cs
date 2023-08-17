@@ -19,20 +19,13 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
 namespace CalradianDeserters.Behaviors
 {
     public class CalradianDesertersCampaignBehavior : CampaignBehaviorBase
     {
-        //TODO: Create deserter parties after battles with a chance
-        //Include minor faction troops in them
-        //Raid villages
-        //merge
-        //save battle data to xml or sheets
-
-
-        //TODO: ADD DAİLY CHANCE OF CREATING DESERTER PARTIES TO CASTLES
         private Dictionary<MobileParty, CampaignTime> _nextDecisionTimes = new Dictionary<MobileParty, CampaignTime>();
         private Dictionary<Settlement, CampaignTime> _nextChanceToSpawnDeserters = new Dictionary<Settlement, CampaignTime>();
         private List<MobileParty> _deserterParties = new List<MobileParty>();
@@ -137,7 +130,7 @@ namespace CalradianDeserters.Behaviors
 
 #endif
 
-            private void OnRebellionFinished(Settlement settlement, Clan clan)
+        private void OnRebellionFinished(Settlement settlement, Clan clan)
         {
             DeclareWarWithFaction(clan);
         }
@@ -172,18 +165,40 @@ namespace CalradianDeserters.Behaviors
         private void OnSessionLaunchedEvent(CampaignGameStarter campaignGameStarter)
         {
             AddDialogs(campaignGameStarter);
-            AddGameMenus(campaignGameStarter);
         }
 
         private void AddDialogs(CampaignGameStarter campaignGameStarter)
         {
+            campaignGameStarter.AddDialogLine("deserter_start_player", "start", "deserter_party_player_greeting", "{=deserters_start}You will die by my hands!", deserter_start_talk_on_condition, null);
+            campaignGameStarter.AddPlayerLine("deserter_start_player1", "deserter_party_player_greeting", "close_window", "{=!}{PLAYER_LINE}", player_start_talk_on_condition, null);
         }
 
-        private void AddGameMenus(CampaignGameStarter campaignGameStarter)
+        #region Dialogs
+        private bool deserter_start_talk_on_condition()
         {
-
+            return MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsDeserterParty();
         }
 
+        private bool player_start_talk_on_condition()
+        {
+            if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsDeserterParty(out var component))
+            {
+                if (component.DeserterOf == Clan.PlayerClan.Kingdom)
+                {
+                    MBTextManager.SetTextVariable("PLAYER_LINE", GameTexts.FindText("str_player_line_same_kingdom")); ;
+                }
+                else
+                {
+                    MBTextManager.SetTextVariable("PLAYER_LINE", GameTexts.FindText("str_player_line_generic")); ;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
         private void HourlyTickParty(MobileParty party)
         {
             if (/*DisableAi || */party.MapEvent != null || (party.CurrentSettlement != null && party.CurrentSettlement.IsUnderSiege))
@@ -329,7 +344,7 @@ namespace CalradianDeserters.Behaviors
                 var canAttackCaravans = mobileParty.IsCaravan && Settings.Instance.AttackVillagers;
                 var attackPatrols = Settings.Instance.AttackPatrolParties && mobileParty.StringId.StartsWith("patrol_party");
 
-                if (mobileParty.IsActive && (canAttackVillagers || canAttackCaravans || mobileParty.IsLordParty ||
+                if (mobileParty.IsActive && (mobileParty.IsMilitia || mobileParty.CurrentSettlement == null) && (canAttackVillagers || canAttackCaravans || mobileParty.IsLordParty ||
                     (mobileParty.IsMilitia && mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsVillage && Settings.Instance.RaidVillages))
                     || attackPatrols
 
@@ -390,7 +405,7 @@ namespace CalradianDeserters.Behaviors
             else if (selectedTarget != null && !selectedTarget.IsMilitia)
             {
                 SetPartyAiAction.GetActionForEngagingParty(party, selectedTarget);
-                DisableThinkForHours(party, 12);
+                DisableThinkForHours(party, 6);
             }
             else if (selectedTarget != null && selectedTarget.IsMilitia && !selectedTarget.CurrentSettlement.IsRaided
                     && !selectedTarget.CurrentSettlement.IsUnderRaid)
@@ -459,15 +474,14 @@ namespace CalradianDeserters.Behaviors
                 return -1f;
             }
 
-#if DEBUG
             if(enemyParty.IsMainParty && !CampaignCheats.MainPartyIsAttackable)
             {
                 return -1f;
             }
-#endif
-            var strengthFactor = Math.Max(enemyParty.GetTotalStrengthWithFollowers() - party.Party.TotalStrength, 0f);
 
-            var multiplier = enemyParty.IsLordParty ? 0.6f : 1.2f;
+            var strengthFactor = Math.Max(party.Party.TotalStrength - enemyParty.GetTotalStrengthWithFollowers(), 0f) / 50f;
+
+            var multiplier = enemyParty.IsLordParty ? 0.6f : (enemyParty.IsCaravan || enemyParty.IsVillager ? 1.2f : 1.0f) ;
 
             var distance = Campaign.Current.Models.MapDistanceModel.GetDistance(party, enemyParty);
 
@@ -475,7 +489,7 @@ namespace CalradianDeserters.Behaviors
         }
 
         private Clan GetDeserterClan(Kingdom faction)
-         {
+        {
             if (faction.StringId == "empire" || faction.StringId == "empire_w" || faction.StringId == "empire_s")
             {
                 return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
@@ -580,7 +594,6 @@ namespace CalradianDeserters.Behaviors
             return tree;
         }
 
-#if DEBUG
         [CommandLineFunctionality.CommandLineArgumentFunction("create_deserters_around", "deserters")]
         public static string CreateDeserters(List<string> str)
         {
@@ -593,6 +606,5 @@ namespace CalradianDeserters.Behaviors
             }
             return "OK";
         }
-#endif
     }
 }

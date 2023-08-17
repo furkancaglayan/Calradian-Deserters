@@ -25,7 +25,7 @@ namespace CalradianDeserters.Components
                 if (TextObject.IsNullOrEmpty(_name))
                 {
                     _name = GameTexts.FindText("str_deserter_name");
-                    _name.SetTextVariable("FACTION_INFORMAL_NAME", _deserterOf.InformalName);
+                    _name.SetTextVariable("FACTION_INFORMAL_NAME", DeserterOf.InformalName);
                 }
 
                 return _name;
@@ -38,8 +38,8 @@ namespace CalradianDeserters.Components
         [SaveableField(0)]
         private Settlement _homeSettlement;
 
-        [SaveableField(1)]
-        private IFaction _deserterOf;
+        [SaveableProperty(1)]
+        public IFaction DeserterOf { get; private set; }    
 
         [SaveableField(2)]
         private TextObject _name;
@@ -65,7 +65,7 @@ namespace CalradianDeserters.Components
         public DeserterPartyComponent(Settlement homeSettlement, IFaction deserterOf)
         {
             _homeSettlement = homeSettlement;
-            _deserterOf = deserterOf;
+            DeserterOf = deserterOf;
         }
     }
 }

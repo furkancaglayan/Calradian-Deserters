@@ -2,5 +2,9 @@
 <strings>
 	<string id="str_deserter_name"
             text="{=deserterpartyname}{FACTION_INFORMAL_NAME} Deserters" />
+  <string id="str_player_line_same_kingdom"
+          text="{=playerlinesamekingdom}You will pay for your crimes!" />
+  <string id="str_player_line_generic"
+          text="{=playerlinegeneric}We will see about that." />
 		
 </strings>
