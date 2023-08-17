@@ -49,9 +49,9 @@ Please be aware that mods may break your game... So be sure to manually back up 
 - Compatible with [MCM](https://www.nexusmods.com/mountandblade2bannerlord/mods/612).
 
 
-<div align="center">
+<p align="center">
     ![Alt Text](https://github.com/furkancaglayan/Calradian-Deserters/blob/main/gifs/1.gif)
-</div>
+</p>
 
 ## How To Install
 
