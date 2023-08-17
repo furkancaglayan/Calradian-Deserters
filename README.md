@@ -50,8 +50,17 @@ Please be aware that mods may break your game... So be sure to manually back up 
 
 
 <p align="center">
-    ![Alt Text](https://github.com/furkancaglayan/Calradian-Deserters/blob/main/gifs/1.gif)
+    <kbd>
+        <img src="gifs/1.gif" alt="animated" width="800"/>
+    </kbd>
 </p>
+
+<p align="center">
+    <kbd>
+        <img src="gifs/2.gif" alt="animated" width="800"/>
+    </kbd>
+</p>
+
 
 ## How To Install
 
