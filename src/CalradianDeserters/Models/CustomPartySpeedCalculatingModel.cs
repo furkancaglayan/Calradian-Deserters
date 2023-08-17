@@ -27,7 +27,7 @@ namespace CalradianDeserters.Models
             var baseSpeed = _baseModel.CalculateFinalSpeed(mobileParty, finalSpeed);
             if (mobileParty.IsDeserterParty())
             {
-                baseSpeed.AddFactor(Settings.Instance.DeserterPartySpeedBonus);
+                baseSpeed.AddFactor(Settings.GetInstance().DeserterPartySpeedBonus);
             }
 
             return baseSpeed;

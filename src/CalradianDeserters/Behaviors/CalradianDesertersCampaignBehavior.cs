@@ -279,7 +279,7 @@ namespace CalradianDeserters.Behaviors
 #endif
                     return;
                 }
-                if (_deserterParties.Count >= Settings.Instance.MaxPartyCount)
+                if (_deserterParties.Count >= Settings.GetInstance().MaxPartyCount)
                 {
                     return;
                 }
@@ -340,12 +340,12 @@ namespace CalradianDeserters.Behaviors
 
             while (mobileParty != null)
             {
-                var canAttackVillagers = mobileParty.IsVillager && Settings.Instance.AttackVillagers;
-                var canAttackCaravans = mobileParty.IsCaravan && Settings.Instance.AttackVillagers;
-                var attackPatrols = Settings.Instance.AttackPatrolParties && mobileParty.StringId.StartsWith("patrol_party");
+                var canAttackVillagers = mobileParty.IsVillager && Settings.GetInstance().AttackVillagers;
+                var canAttackCaravans = mobileParty.IsCaravan && Settings.GetInstance().AttackVillagers;
+                var attackPatrols = Settings.GetInstance().AttackPatrolParties && mobileParty.StringId.StartsWith("patrol_party");
 
                 if (mobileParty.IsActive && (mobileParty.IsMilitia || mobileParty.CurrentSettlement == null) && (canAttackVillagers || canAttackCaravans || mobileParty.IsLordParty ||
-                    (mobileParty.IsMilitia && mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsVillage && Settings.Instance.RaidVillages))
+                    (mobileParty.IsMilitia && mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsVillage && Settings.GetInstance().RaidVillages))
                     || attackPatrols
 
                     )
@@ -453,13 +453,13 @@ namespace CalradianDeserters.Behaviors
 
             if (factionTroops.Any())
             {
-                for (int i = 0; i < Settings.Instance.MinimumPartyTroopSize; i++)
+                for (int i = 0; i < Settings.GetInstance().MinimumPartyTroopSize; i++)
                 {
                     roster.AddToCounts(factionTroops.GetRandomElement(), 1);
                 }
             }
 
-            for (int i = 0; i < extraTroops + (Settings.Instance.MinimumPartyTroopSize - roster.TotalManCount); i++)
+            for (int i = 0; i < extraTroops + (Settings.GetInstance().MinimumPartyTroopSize - roster.TotalManCount); i++)
             {
                 roster.AddToCounts(deserterTroops.GetRandomElement(), 1);
             }
@@ -584,13 +584,13 @@ namespace CalradianDeserters.Behaviors
 
         private List<CharacterObject> GetTroopTreeOfFaction(IFaction faction)
         {
-            if (_troopTrees.TryGetValue((faction, Settings.Instance.MinimumTroopTier), out var tree))
+            if (_troopTrees.TryGetValue((faction, Settings.GetInstance().MinimumTroopTier), out var tree))
             {
                 return tree;
             }
 
-            tree = CharacterHelper.GetTroopTree(faction.BasicTroop, Settings.Instance.MinimumTroopTier).ToList();
-            _troopTrees.Add((faction, Settings.Instance.MinimumTroopTier), tree);
+            tree = CharacterHelper.GetTroopTree(faction.BasicTroop, Settings.GetInstance().MinimumTroopTier).ToList();
+            _troopTrees.Add((faction, Settings.GetInstance().MinimumTroopTier), tree);
             return tree;
         }
 
