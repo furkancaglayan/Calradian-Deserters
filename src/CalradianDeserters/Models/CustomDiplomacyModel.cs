@@ -211,7 +211,7 @@ namespace CalradianDeserters.Models
 
         public override float GetScoreOfDeclaringPeace(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace, IFaction evaluatingFaction, out TextObject reason)
         {
-            reason = new TextObject("{=*}Can not declare peace with with Deserter factions");
+            reason = TextObject.Empty;
             if (factionDeclaresPeace.IsDeserterClan() || factionDeclaredPeace.IsDeserterClan())
             {
                 return float.MinValue;

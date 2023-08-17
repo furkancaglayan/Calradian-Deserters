@@ -3,7 +3,7 @@
 	<NPCCharacter
 		id="deserter"
 		default_group="Infantry"
-		name="{=C8DE6L73}Deserter 22222222222222"
+		name="{=C8DE6L73}Deserter"
 		level="11"
 		occupation="Bandit"
 		culture="Culture.looters">

@@ -2,13 +2,5 @@
 <strings>
 	<string id="str_deserter_name"
             text="{=deserterpartyname}{FACTION_INFORMAL_NAME} Deserters" />
-	<string id="str_patrol_party_destroyed"
-            text="{=5m9ld6a6}One of {SETTLEMENT}'s patrol parties was destroyed by {DESTROYER}." />
-	<string id="str_patrol_party_bandit_encounter"
-            text="{=ppfUuxwa}We have encountered some {BANDIT_NAME} {?IS_TODAY}today.{?}{DAYS_AGO} days ago.{\?}{?IS_AROUND_SETTLEMENT} They were roaming around {SETTLEMENT_NAME}.{?}{\?} We {?DEAD_COUNT}lost {DEAD_COUNT} of our men to those damned arseholes{?}didn't lose any men{\?} in that battle.{?WOUNDED_COUNT} Damned {BANDIT_NAME} also wounded {WOUNDED_COUNT} of my guys.{?}{\?}" />
-	<string id="str_patrol_party_caught_bandits_text"
-            text="{=mflOH8vp}We have caught{?COUNT} bandit scums{?} one bandit scum{\?} so far. We will ransom them at {SETTLEMENT}." />
-	<string id="str_patrol_party_didnt_caught_bandits_text"
-            text="{=qJtokSKh}We haven't captured any bandits so far. We are still searching for them." />
-
+		
 </strings>

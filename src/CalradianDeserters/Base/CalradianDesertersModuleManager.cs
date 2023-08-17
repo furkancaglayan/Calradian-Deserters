@@ -1,9 +1,17 @@
-﻿namespace CalradianDeserters.Base
+﻿using System.Collections.Generic;
+
+namespace CalradianDeserters.Base
 {
     public class CalradianDesertersModuleManager
     {
         public static CalradianDesertersModuleManager Current { get; private set; }
 
+        public static List<string> DeserterClanIds => new List<string> { "deserters_vlandia",
+                                                                         "deserters_empire",
+                                                                         "deserters_sturgia",
+                                                                         "deserters_battania",
+                                                                         "deserters_aserai",
+                                                                         "deserters_khuzait"};
         //private bool _registered;
 
         public static Settings Settings

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem.Encyclopedia;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Encyclopedia.Pages;
+using CalradianDeserters.Extensions;
 
 namespace CalradianDeserters.EncyclopediaPages
 {
@@ -29,7 +30,7 @@ namespace CalradianDeserters.EncyclopediaPages
 
         public override bool IsValidEncyclopediaItem(object o)
         {
-            if (o is Clan c && c.StringId.StartsWith("deserters_"))
+            if (o is Clan c && c.IsDeserterClan())
             {
                 return false;
             }

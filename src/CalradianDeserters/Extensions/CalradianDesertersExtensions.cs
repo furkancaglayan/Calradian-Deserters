@@ -1,4 +1,5 @@
-﻿using CalradianDeserters.Components;
+﻿using CalradianDeserters.Base;
+using CalradianDeserters.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace CalradianDeserters.Extensions
         {
             if (faction is Clan clan)
             {
-                return clan.StringId.StartsWith("deserters_");
+                return CalradianDesertersModuleManager.DeserterClanIds.Contains(clan.StringId);
             }
 
             return false;

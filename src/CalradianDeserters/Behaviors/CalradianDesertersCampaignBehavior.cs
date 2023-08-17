@@ -1,4 +1,5 @@
-﻿using CalradianDeserters.Components;
+﻿using CalradianDeserters.Base;
+using CalradianDeserters.Components;
 using CalradianDeserters.Extensions;
 using Helpers;
 using System;
@@ -290,11 +291,11 @@ namespace CalradianDeserters.Behaviors
                 }
 
                 var count = (int)(defeatedLeader.MapEventSide.Casualties / 10);
-                var troopRoster = GetTroopsForParty(defeatedLeader.MapFaction, MBMath.ClampInt(count, 0, 15));
+                var troopRoster = GetTroopsForParty((Kingdom)defeatedLeader.MapFaction, MBMath.ClampInt(count, 0, 15));
 
                 var homeSettlement = mapEvent.MapEventSettlement ?? nearestVillage;
                 _nextChanceToSpawnDeserters[nearestVillage] = CampaignTime.DaysFromNow(7);
-                CreateDeserterParty(homeSettlement, GetDeserterClan(defeatedLeader.MapFaction), defeatedLeader.MapFaction, troopRoster, mapEvent.Position);
+                CreateDeserterParty(homeSettlement, GetDeserterClan((Kingdom)defeatedLeader.MapFaction), defeatedLeader.MapFaction, troopRoster, mapEvent.Position);
             }
         }
         private void OnMobilePartyDestroyed(MobileParty mobileParty, PartyBase destroyerParty)
@@ -326,15 +327,11 @@ namespace CalradianDeserters.Behaviors
             {
                 var canAttackVillagers = mobileParty.IsVillager && Settings.Instance.AttackVillagers;
                 var canAttackCaravans = mobileParty.IsCaravan && Settings.Instance.AttackVillagers;
-#if CALRADIAN_PATROLSV2
-                var attackPatrols = mobileParty.PartyComponent is PatrolPartyComponent && Settings.Instance.AttackPatrolParties;
-#endif
+                var attackPatrols = Settings.Instance.AttackPatrolParties && mobileParty.StringId.StartsWith("patrol_party");
 
                 if (mobileParty.IsActive && (canAttackVillagers || canAttackCaravans || mobileParty.IsLordParty ||
                     (mobileParty.IsMilitia && mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsVillage && Settings.Instance.RaidVillages))
-#if CALRADIAN_PATROLSV2
                     || attackPatrols
-#endif
 
                     )
                 {
@@ -432,7 +429,7 @@ namespace CalradianDeserters.Behaviors
         }
 
 
-        private TroopRoster GetTroopsForParty(IFaction deserterOf, int extraTroops = 0)
+        private TroopRoster GetTroopsForParty(Kingdom deserterOf, int extraTroops = 0)
         {
             var roster = TroopRoster.CreateDummyTroopRoster();
 
@@ -474,17 +471,21 @@ namespace CalradianDeserters.Behaviors
 
             var distance = Campaign.Current.Models.MapDistanceModel.GetDistance(party, enemyParty);
 
-            return multiplier * (strengthFactor - 0.5f) + (1 / (distance * distance));
+            return multiplier * (strengthFactor + 0.5f) + (1 / (distance * distance));
         }
 
-        private Clan GetDeserterClan(IFaction faction)
-        {
+        private Clan GetDeserterClan(Kingdom faction)
+         {
             if (faction.StringId == "empire" || faction.StringId == "empire_w" || faction.StringId == "empire_s")
             {
                 return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
             }
+            else if (CalradianDesertersModuleManager.DeserterClanIds.Contains($"deserters_{faction.StringId}"))
+            {
+                return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_{faction.StringId}");
+            }
 
-            return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_{faction.StringId}");
+            return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
         }
 
         private bool IsDeserterClan(Clan clan)
@@ -528,8 +529,6 @@ namespace CalradianDeserters.Behaviors
 
                         deserterClan.SetLeader(deserterLeader);
                     }
-
-
                 }
             }
 
@@ -580,5 +579,20 @@ namespace CalradianDeserters.Behaviors
             _troopTrees.Add((faction, Settings.Instance.MinimumTroopTier), tree);
             return tree;
         }
+
+#if DEBUG
+        [CommandLineFunctionality.CommandLineArgumentFunction("create_deserters_around", "deserters")]
+        public static string CreateDeserters(List<string> str)
+        {
+            var behavior = Campaign.Current.GetCampaignBehavior<CalradianDesertersCampaignBehavior>();
+            var nearestVillage = SettlementHelper.FindNearestVillage(toMapPoint: MobileParty.MainParty);
+
+            foreach (var kingdom in Kingdom.All)
+            {
+                behavior.CreateDeserterParty(nearestVillage, behavior.GetDeserterClan(kingdom), kingdom, behavior.GetTroopsForParty(kingdom), MobileParty.MainParty.Position2D);
+            }
+            return "OK";
+        }
+#endif
     }
 }

@@ -25,7 +25,7 @@ namespace CalradianDeserters
         [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic")]
         public int MinimumPartyTroopSize { get; set; } = 45;
 
-        [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_1_0}Base Spawn Chance", 0f, 1f, "0%", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_1_1}Base chance to spawn a deserter aprty after battles.")]
+        [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_1_0}Base Spawn Chance", 0f, 1f, "0%", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_1_1}Base chance to spawn a deserter party after battles.")]
         [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public float BaseSpawnPartyChance { get; set; } = 0.8f;
 
@@ -37,20 +37,18 @@ namespace CalradianDeserters
         [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool AttackVillagers { get; set; } = true;
 
-#if CALRADIAN_PATROLSV2
         [SettingProperty("{=str_calradiandeserters_settings_4_0}Attack Patrol Parties", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_4_1}Deserters will attack patrol parties")]
         [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool AttackPatrolParties { get; set; } = true;
-#endif
 
         [SettingProperty("{=str_calradiandeserters_settings_5_0}Raid Villages", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_5_1}Deserters will try to raid villages")]
         [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool RaidVillages { get; set; } = true;
 
-        [SettingProperty("{=str_calradiandeserters_settings_6_0}Merge Deserter Parties", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_6_1}Different deserter parties will try to merge into a more powerful party")]
+        /*[SettingProperty("{=str_calradiandeserters_settings_6_0}Merge Deserter Parties", RequireRestart = false, HintText = "{=str_calradiandeserters_settings_6_1}Different deserter parties will try to merge into a more powerful party")]
         [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic", GroupOrder = 0)]
         public bool MergeParties { get; set; } = true;
-
+        */
 
 
         [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_7_0}Minimum Troop Tier", 1f, 6f, "0", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_7_1}Minimum troop tier for deserter parties")]
@@ -58,14 +56,14 @@ namespace CalradianDeserters
         public int MinimumTroopTier { get; set; } = 3;
 
 
-        [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_8_0}Max Party Size", 50, 300, "0", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_8_1}Maximum allowed party count")]
+        [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_8_0}Maximum Party Count", 50, 300, "0", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_8_1}Maximum allowed party count")]
         [SettingPropertyGroup("{=str_calradiandeserters_settings_advanced}Calradian Deserters - Advanced")]
         public int MaxPartyCount { get; set; } = 75;
 
 
-        [SettingPropertyFloatingInteger("{=str_calradianpatrols_settings_9_0}Deserter Party Speed Bonus", 0f, 10f, "0%", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_9_1}Increases deserter party speed")]
-        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Patrols - Basic")]
-        public float DeserterPartySpeedBonus { get; set; } = 1.2f;
+        [SettingPropertyFloatingInteger("{=str_calradianpatrols_settings_9_0}Deserter Party Speed Bonus", 0f, 3f, "0%", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_9_1}Increases deserter party speed")]
+        [SettingPropertyGroup("{=str_calradiandeserters_settings_basic}Calradian Deserters - Basic")]
+        public float DeserterPartySpeedBonus { get; set; } = 0.6f;
 
         public static Settings GetInstance() => CalradianDesertersModuleManager.Settings;
     }
