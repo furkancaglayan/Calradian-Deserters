@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3021502597"><img alt="Steam Calradian Deserters" src="https://img.shields.io/badge/Steam-Calradian%20Deserters%20V2-blue.svg" /></a>
+  <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3021502597"><img alt="Steam Calradian Deserters" src="https://img.shields.io/badge/Steam-Calradian%20Deserters-blue.svg" /></a>
   <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3021502597"><img alt="Steam Downloads" src="https://img.shields.io/steam/downloads/3021502597?label=Downloads&color=blue"></a>
   <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3021502597"><img alt="Steam Views" src="https://img.shields.io/steam/views/3021502597?label=Views&color=blue"></a>
   <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3021502597"><img alt="Steam Subscriptions" src="https://img.shields.io/steam/subscriptions/3021502597?label=Subscriptions&color=blue"></a>
