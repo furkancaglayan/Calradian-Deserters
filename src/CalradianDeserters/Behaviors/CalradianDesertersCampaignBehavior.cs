@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.LogEntries;
@@ -20,7 +21,9 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.ObjectSystem;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CalradianDeserters.Behaviors
 {
@@ -59,7 +62,7 @@ namespace CalradianDeserters.Behaviors
             CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
             CampaignEvents.MobilePartyDestroyed.AddNonSerializedListener(this, OnMobilePartyDestroyed);
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreated);
-            CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
+            CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
             CampaignEvents.OnCompanionClanCreatedEvent.AddNonSerializedListener(this, OnCompanionClanCreated);
             CampaignEvents.KingdomCreatedEvent.AddNonSerializedListener(this, OnKingdomCreated);
             CampaignEvents.RebellionFinished.AddNonSerializedListener(this, OnRebellionFinished);
@@ -147,7 +150,7 @@ namespace CalradianDeserters.Behaviors
 
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
         {
-            InitializeDeserterClans();
+            InitializeDeserterClans(true);
 
             foreach (var deserterParty in MobileParty.All)
             {
@@ -521,19 +524,25 @@ namespace CalradianDeserters.Behaviors
             return false;
         }
 
-        private void InitializeDeserterClans()
+        private void InitializeDeserterClans(bool onLoad = false)
         {
-            foreach (var kingdom in Kingdom.All)
+            foreach (var stringId in CalradianDesertersModuleManager.DeserterClanIds)
             {
-                var deserterClan = GetDeserterClan(kingdom);
-                deserterClan.BasicTroop = MBObjectManager.Instance.GetObject<CharacterObject>("deserter");
+                var deserterClan = Campaign.Current.CampaignObjectManager.Find<Clan>(stringId);
 
-                if (deserterClan == null)
+                if (deserterClan == null && onLoad)
                 {
-                    Debug.FailedAssert("deserterClan == null");
+                    var document = new XmlDocument();
+                    var tr = new StreamReader(ModuleHelper.GetModuleFullPath("CalradianDeserters") + "ModuleData/clans.xml");
+                    document.LoadXml(tr.ReadToEnd());
+                    tr.Close();
+                    LoadXml(document, stringId);
+                    deserterClan = Campaign.Current.CampaignObjectManager.Find<Clan>(stringId);
                 }
-                else
+
+                if (deserterClan != null)
                 {
+                    deserterClan.BasicTroop = MBObjectManager.Instance.GetObject<CharacterObject>("deserter");
 
                     if (deserterClan.Leader == null)
                     {
@@ -593,6 +602,27 @@ namespace CalradianDeserters.Behaviors
             _troopTrees.Add((faction, Settings.GetInstance().MinimumTroopTier), tree);
             return tree;
         }
+
+        public void LoadXml(XmlDocument doc, string stringId = null)
+        {
+            XmlNode node = doc.ChildNodes[1].ChildNodes[0];
+            while (node != null)
+            {
+                if (node.NodeType != XmlNodeType.Comment)
+                {
+                    string objName = node.Attributes["id"].Value;
+                    if (stringId == null || stringId == objName)
+                    {
+                        var clan = Clan.CreateClan(objName);
+                        clan.Deserialize(MBObjectManager.Instance, node);
+                        clan.AfterInitialized();
+                    }
+                }
+
+                node = node.NextSibling;
+            }
+        }
+
 
         [CommandLineFunctionality.CommandLineArgumentFunction("create_deserters_around", "deserters")]
         public static string CreateDeserters(List<string> str)
