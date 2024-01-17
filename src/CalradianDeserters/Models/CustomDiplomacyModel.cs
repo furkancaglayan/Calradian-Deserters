@@ -115,9 +115,9 @@ namespace CalradianDeserters.Models
            return _baseModel.GetInfluenceCostOfAbandoningArmy();
         }
 
-        public override int GetInfluenceCostOfAnnexation(Kingdom proposingKingdom)
+        public override int GetInfluenceCostOfAnnexation(Clan proposingClan)
         {
-            return _baseModel.GetInfluenceCostOfAnnexation(proposingKingdom);
+            return _baseModel.GetInfluenceCostOfAnnexation(proposingClan);
         }
 
         public override int GetInfluenceCostOfChangingLeaderOfArmy()
@@ -130,24 +130,24 @@ namespace CalradianDeserters.Models
             return _baseModel.GetInfluenceCostOfDisbandingArmy();
         }
 
-        public override int GetInfluenceCostOfExpellingClan()
+        public override int GetInfluenceCostOfExpellingClan(Clan proposingClan)
         {
-            return _baseModel.GetInfluenceCostOfExpellingClan();
+            return _baseModel.GetInfluenceCostOfExpellingClan(proposingClan);
         }
 
-        public override int GetInfluenceCostOfPolicyProposalAndDisavowal()
+        public override int GetInfluenceCostOfPolicyProposalAndDisavowal(Clan proposingClan)
         {
-            return _baseModel.GetInfluenceCostOfPolicyProposalAndDisavowal();
+            return _baseModel.GetInfluenceCostOfPolicyProposalAndDisavowal(proposingClan);
         }
 
-        public override int GetInfluenceCostOfProposingPeace()
+        public override int GetInfluenceCostOfProposingPeace(Clan proposingClan)
         {
-            return _baseModel.GetInfluenceCostOfProposingPeace();
+            return _baseModel.GetInfluenceCostOfProposingPeace(proposingClan);
         }
 
-        public override int GetInfluenceCostOfProposingWar(Kingdom proposingKingdom)
+        public override int GetInfluenceCostOfProposingWar(Clan proposingClan)
         {
-            return _baseModel.GetInfluenceCostOfProposingWar(proposingKingdom);
+            return _baseModel.GetInfluenceCostOfProposingWar(proposingClan);
         }
 
         public override int GetInfluenceCostOfSupportingClan()

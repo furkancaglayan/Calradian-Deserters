@@ -69,7 +69,7 @@ namespace CalradianDeserters.Behaviors
 #if DEBUG
             CampaignEvents.MakePeace.AddNonSerializedListener(this, OnPeace);
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, DailyTick);
-            CampaignEvents.ClanChangedKingdom.AddNonSerializedListener(this, OnClanChangedKingdom);
+            CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
             CampaignEvents.RaidCompletedEvent.AddNonSerializedListener(this, OnRaidCompleted);
 #endif
         }

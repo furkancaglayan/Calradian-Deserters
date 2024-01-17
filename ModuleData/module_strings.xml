@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <strings>
 	<string id="str_deserter_name"
-            text="{=deserterpartyname}{FACTION_INFORMAL_NAME} Deserters" />
+            text="{=deserterpartyname}{.^}{FACTION_INFORMAL_NAME} Deserters" />
   <string id="str_player_line_same_kingdom"
           text="{=playerlinesamekingdom}You will pay for your crimes!" />
   <string id="str_player_line_generic"
