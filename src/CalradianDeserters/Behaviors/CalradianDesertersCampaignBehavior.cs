@@ -462,11 +462,14 @@ namespace CalradianDeserters.Behaviors
                 }
             }
 
-            for (int i = 0; i < extraTroops + (Settings.GetInstance().MinimumPartyTroopSize - roster.TotalManCount); i++)
+            if (deserterTroops.Any())
             {
-                roster.AddToCounts(deserterTroops.GetRandomElement(), 1);
+                for (int i = 0; i < extraTroops + (Settings.GetInstance().MinimumPartyTroopSize - roster.TotalManCount); i++)
+                {
+                    roster.AddToCounts(deserterTroops.GetRandomElement(), 1);
+                }
             }
-
+          
             return roster;
         }
 
@@ -593,13 +596,14 @@ namespace CalradianDeserters.Behaviors
 
         private List<CharacterObject> GetTroopTreeOfFaction(IFaction faction)
         {
-            if (_troopTrees.TryGetValue((faction, Settings.GetInstance().MinimumTroopTier), out var tree))
+            int minTier = MBMath.ClampInt(Settings.GetInstance().MinimumTroopTier, 0, 5);
+            if (_troopTrees.TryGetValue((faction, minTier), out var tree))
             {
                 return tree;
             }
 
-            tree = CharacterHelper.GetTroopTree(faction.BasicTroop, Settings.GetInstance().MinimumTroopTier).ToList();
-            _troopTrees.Add((faction, Settings.GetInstance().MinimumTroopTier), tree);
+            tree = CharacterHelper.GetTroopTree(faction.BasicTroop, minTier).ToList();
+            _troopTrees.Add((faction, minTier), tree);
             return tree;
         }
 

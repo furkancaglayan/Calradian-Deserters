@@ -51,7 +51,7 @@ namespace CalradianDeserters
         */
 
 
-        [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_7_0}Minimum Troop Tier", 1f, 6f, "0", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_7_1}Minimum troop tier for deserter parties")]
+        [SettingPropertyFloatingInteger("{=str_calradiandeserters_settings_7_0}Minimum Troop Tier", 1f, 5f, "0", Order = 0, RequireRestart = false, HintText = "{=str_calradiandeserters_settings_7_1}Minimum troop tier for deserter parties")]
         [SettingPropertyGroup("{=str_calradiandeserters_settings_advanced}Calradian Deserters - Advanced")]
         public int MinimumTroopTier { get; set; } = 3;
 
