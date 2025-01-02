@@ -496,22 +496,16 @@ namespace CalradianDeserters.Behaviors
 
         private Clan GetDeserterClan(Kingdom faction)
         {
-            Clan clan = null;
             if (faction.StringId == "empire" || faction.StringId == "empire_w" || faction.StringId == "empire_s")
             {
-                clan = Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
+                return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
             }
             else if (CalradianDesertersModuleManager.DeserterClanIds.Contains($"deserters_{faction.StringId}"))
             {
-                clan = Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_{faction.StringId}");
+                return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_{faction.StringId}");
             }
 
-            if (clan == null)
-            {
-                clan = Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
-            }
-
-            return clan;
+            return Campaign.Current.CampaignObjectManager.Find<Clan>(x => x.StringId == $"deserters_empire");
         }
 
         private bool IsDeserterClan(Clan clan)

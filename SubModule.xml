@@ -1,13 +1,13 @@
 <Module>
 	<Name value="Calradian Deserters"/>
 	<Id value="CalradianDeserters"/>
-	<Version value="v1.0.2"/>
+	<Version value="v1.0.3"/>
 	<SingleplayerModule value="true"/>
 	<MultiplayerModule value="false"/>
 	<DependedModules>
-		<DependedModule Id="Native" DependentVersion = "v1.2.9"/>
-		<DependedModule Id="SandBoxCore" DependentVersion = "v1.2.9"/>
-		<DependedModule Id="Sandbox" DependentVersion = "v1.2.9"/>
+		<DependedModule Id="Native" DependentVersion = "v1.2.11"/>
+		<DependedModule Id="SandBoxCore" DependentVersion = "v1.2.11"/>
+		<DependedModule Id="Sandbox" DependentVersion = "v1.2.11"/>
 	</DependedModules>
 	<SubModules>
 		<SubModule>
